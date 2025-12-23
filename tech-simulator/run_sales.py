@@ -1,13 +1,18 @@
 # run_sales.py
 import os
+import sys
 import base64
 import json
 import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
+from datetime import datetime
+
+# Add current folder to Python path to import generate.py
+sys.path.append(os.path.dirname(__file__))
+
 from generate import generate_employees, generate_clients, generate_sales
 from sheets_writer import append_df
-from datetime import datetime
 
 # ---------------- CONFIG ----------------
 SPREADSHEET_ID = "1LZiH-MdlR2k6KcDhvCPUDdzauQTD_qnETpDcK62hdpA"
@@ -19,7 +24,10 @@ if not service_account_b64:
     raise ValueError("GCP_SERVICE_ACCOUNT env variable not found")
 
 service_account_info = json.loads(base64.b64decode(service_account_b64))
-creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+creds = Credentials.from_service_account_info(
+    service_account_info, 
+    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+)
 client = gspread.authorize(creds)
 
 # ---------------- OPEN SHEET ----------------
@@ -38,9 +46,10 @@ sales_headers = [
 ]
 
 # ---------------- CREATE SHEETS IF MISSING ----------------
-sheet_employees = spreadsheet.worksheet("Employees") if "Employees" in [ws.title for ws in spreadsheet.worksheets()] else spreadsheet.add_worksheet("Employees", rows=2000, cols=len(employee_headers))
-sheet_clients = spreadsheet.worksheet("Clients") if "Clients" in [ws.title for ws in spreadsheet.worksheets()] else spreadsheet.add_worksheet("Clients", rows=500, cols=len(client_headers))
-sheet_sales = spreadsheet.worksheet("Sales") if "Sales" in [ws.title for ws in spreadsheet.worksheets()] else spreadsheet.add_worksheet("Sales", rows=5000, cols=len(sales_headers))
+sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
+sheet_employees = spreadsheet.worksheet("Employees") if "Employees" in sheet_titles else spreadsheet.add_worksheet("Employees", rows=2000, cols=len(employee_headers))
+sheet_clients = spreadsheet.worksheet("Clients") if "Clients" in sheet_titles else spreadsheet.add_worksheet("Clients", rows=500, cols=len(client_headers))
+sheet_sales = spreadsheet.worksheet("Sales") if "Sales" in sheet_titles else spreadsheet.add_worksheet("Sales", rows=5000, cols=len(sales_headers))
 
 # ---------------- AUTO-FILL HEADERS ----------------
 if len(sheet_employees.get_all_values()) == 0:
