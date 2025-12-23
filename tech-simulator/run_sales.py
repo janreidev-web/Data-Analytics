@@ -24,7 +24,10 @@ if not service_account_b64:
     raise ValueError("GCP_SERVICE_ACCOUNT env variable not found")
 
 service_account_info = json.loads(base64.b64decode(service_account_b64))
-creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+creds = Credentials.from_service_account_info(
+    service_account_info, 
+    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+)
 client = gspread.authorize(creds)
 
 # --------- Open spreadsheet ---------
@@ -43,35 +46,65 @@ sales_headers = [
 ]
 
 # ---------------- CREATE SHEETS IF MISSING ----------------
+print("Checking worksheets...")
 sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
-sheet_employees = spreadsheet.worksheet("Employees") if "Employees" in sheet_titles else spreadsheet.add_worksheet("Employees", rows=2000, cols=len(employee_headers))
-sheet_clients = spreadsheet.worksheet("Clients") if "Clients" in sheet_titles else spreadsheet.add_worksheet("Clients", rows=500, cols=len(client_headers))
-sheet_sales = spreadsheet.worksheet("Sales") if "Sales" in sheet_titles else spreadsheet.add_worksheet("Sales", rows=5000, cols=len(sales_headers))
+
+sheet_employees = (spreadsheet.worksheet("Employees") if "Employees" in sheet_titles 
+                   else spreadsheet.add_worksheet("Employees", rows=2000, cols=len(employee_headers)))
+sheet_clients = (spreadsheet.worksheet("Clients") if "Clients" in sheet_titles 
+                 else spreadsheet.add_worksheet("Clients", rows=500, cols=len(client_headers)))
+sheet_sales = (spreadsheet.worksheet("Sales") if "Sales" in sheet_titles 
+               else spreadsheet.add_worksheet("Sales", rows=5000, cols=len(sales_headers)))
 
 # ---------------- AUTO-FILL HEADERS ----------------
+print("Checking headers...")
 if len(sheet_employees.get_all_values()) == 0:
     sheet_employees.append_row(employee_headers)
+    print("✓ Added headers to Employees sheet")
+    
 if len(sheet_clients.get_all_values()) == 0:
     sheet_clients.append_row(client_headers)
+    print("✓ Added headers to Clients sheet")
+    
 if len(sheet_sales.get_all_values()) == 0:
     sheet_sales.append_row(sales_headers)
+    print("✓ Added headers to Sales sheet")
 
 # ---------------- READ EXISTING DATA ----------------
-employees = sheet_employees.get_all_records()
-clients = sheet_clients.get_all_records()
+print("Reading existing data...")
+employees_data = sheet_employees.get_all_records()
+clients_data = sheet_clients.get_all_records()
 
 # ---------------- AUTO-GENERATE EMPLOYEES IF EMPTY ----------------
-if not employees:
+if not employees_data:
+    print("No employees found. Generating 1100 employees...")
     employees = generate_employees(total_employees=1000, num_interns=100)
     append_df(spreadsheet, "Employees", pd.DataFrame(employees), employee_headers)
+    print(f"✓ Generated and saved {len(employees)} employees")
+else:
+    employees = employees_data
+    print(f"✓ Using existing {len(employees)} employees")
 
 # ---------------- AUTO-GENERATE CLIENTS IF EMPTY ----------------
-if not clients:
+if not clients_data:
+    print("No clients found. Generating 200 clients...")
     clients = generate_clients(num_clients=200)
     append_df(spreadsheet, "Clients", pd.DataFrame(clients), client_headers)
+    print(f"✓ Generated and saved {len(clients)} clients")
+else:
+    clients = clients_data
+    print(f"✓ Using existing {len(clients)} clients")
 
 # ---------------- GENERATE NEW SALES ----------------
+print(f"Generating {NUM_SALES} new sales records...")
 new_sales = generate_sales(employees, clients, num_sales=NUM_SALES)
 append_df(spreadsheet, "Sales", pd.DataFrame(new_sales), sales_headers)
 
-print(f"{len(new_sales)} sales appended successfully at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+print(f"✓ {len(new_sales)} sales appended successfully at {timestamp}")
+print("=" * 50)
+print("SUMMARY:")
+print(f"  Employees: {len(employees)}")
+print(f"  Clients: {len(clients)}")
+print(f"  New Sales: {len(new_sales)}")
+print("=" * 50)
