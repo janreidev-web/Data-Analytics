@@ -1,27 +1,20 @@
 import gspread
 from google.oauth2.service_account import Credentials
+import pandas as pd
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-def get_client():
-    creds = Credentials.from_service_account_file(
-        "service_account.json", scopes=SCOPES
-    )
-    return gspread.authorize(creds)
-
-def write_df(sheet_id, sheet_name, df):
-    client = get_client()
-    sh = client.open_by_key(sheet_id)
-
+def get_or_create_worksheet(spreadsheet, title, headers, rows=1000, cols=20):
+    """Get worksheet by title or create if missing"""
     try:
-        ws = sh.worksheet(sheet_name)
-        ws.clear()
-    except:
-        ws = sh.add_worksheet(sheet_name, rows="1000", cols="20")
+        ws = spreadsheet.worksheet(title)
+    except gspread.WorksheetNotFound:
+        ws = spreadsheet.add_worksheet(title=title, rows=rows, cols=cols)
+        ws.append_row(headers)
+    return ws
 
-    ws.update([df.columns.tolist()] + df.values.tolist())
-
-def append_df(sheet_id, sheet_name, df):
-    client = get_client()
-    ws = client.open_by_key(sheet_id).worksheet(sheet_name)
-    ws.append_rows(df.values.tolist(), value_input_option="USER_ENTERED")
+def append_df(spreadsheet, worksheet_title, df, headers):
+    """Append DataFrame to worksheet"""
+    ws = get_or_create_worksheet(spreadsheet, worksheet_title, headers)
+    if df.empty:
+        return
+    for row in df.to_dict(orient="records"):
+        ws.append_row(list(row.values()))
