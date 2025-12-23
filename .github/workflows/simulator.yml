@@ -23,5 +23,9 @@ jobs:
         echo "${{ secrets.GCP_SERVICE_ACCOUNT }}" | base64 -d > $HOME/gcloud-key.json
         echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-key.json" >> $GITHUB_ENV
     - name: Run data generator
+      env:
+        GCP_PROJECT_ID: tech-data-simulator
+        BQ_DATASET: tech_analytics
+        INITIAL_SALES: 100000
       run: |
         python TechnoDataGenerator/data_generator.py
