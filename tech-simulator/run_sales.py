@@ -60,7 +60,7 @@ sales_headers = [
 
 operating_cost_headers = [
     "Cost ID","Date","Year","Month","Month Name","Category","Cost Type","Amount",
-    "Currency","Vendor","Payment Method","Payment Status","Notes","Last Updated"
+    "Currency","Vendor","Payment Method","Payment Status","Last Updated"
 ]
 
 def normalize_records(records, expected_headers):
