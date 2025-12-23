@@ -1,29 +1,30 @@
-name: Daily Data Generator
+name: Techno Data Generator
 
 on:
   schedule:
-    # Runs every day at 12:00 AM UTC
-    - cron: '0 0 * * *'
-  workflow_dispatch:  # Also allows manual trigger
+    - cron: '0 0 * * *'  # every day at 12 AM
+  workflow_dispatch:
 
 jobs:
-  run-data-generator:
+  generate-data:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.14'
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
       - name: Install dependencies
-        run: pip install -r TechnoDataGenerator/requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r TechnoDataGenerator/requirements.txt
+
+      - name: Authenticate to GCP
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT }}" > $HOME/gcloud-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-key.json" >> $GITHUB_ENV
 
       - name: Run Data Generator
         run: python TechnoDataGenerator/data_generator.py
