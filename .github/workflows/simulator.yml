@@ -1,0 +1,27 @@
+name: Tech Data Simulator
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # Run every 5 minutes
+  workflow_dispatch:       # Manual trigger allowed
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      # Install requirements from tech-simulator folder
+      - run: pip install -r tech-simulator/requirements.txt
+
+      # Decode and save your service account key inside tech-simulator folder
+      - run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT }}" | base64 --decode > tech-simulator/service_account.json
+
+      # Run your sales simulation script inside tech-simulator folder
+      - run: python tech-simulator/run_sales.py
