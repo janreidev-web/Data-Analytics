@@ -45,6 +45,33 @@ sales_headers = [
     "Sales Rep ID","Contract Type","Contract Duration","Revenue Amount","Currency","Region","Is Recurring"
 ]
 
+def normalize_records(records, expected_headers):
+    """
+    Normalize records from Google Sheets to match expected header format.
+    Handles cases where sheet headers might have extra spaces or formatting.
+    """
+    if not records:
+        return records
+    
+    normalized = []
+    for record in records:
+        normalized_record = {}
+        for expected_header in expected_headers:
+            # Try exact match first
+            if expected_header in record:
+                normalized_record[expected_header] = record[expected_header]
+            else:
+                # Try to find a match ignoring extra spaces
+                for key in record.keys():
+                    if key.strip() == expected_header.strip():
+                        normalized_record[expected_header] = record[key]
+                        break
+                # If still not found, set empty value
+                if expected_header not in normalized_record:
+                    normalized_record[expected_header] = ""
+        normalized.append(normalized_record)
+    return normalized
+
 # ---------------- CREATE SHEETS IF MISSING ----------------
 print("Checking worksheets...")
 sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
@@ -74,6 +101,12 @@ if len(sheet_sales.get_all_values()) == 0:
 print("Reading existing data...")
 employees_data = sheet_employees.get_all_records()
 clients_data = sheet_clients.get_all_records()
+
+# Normalize the data to ensure correct keys
+if employees_data:
+    employees_data = normalize_records(employees_data, employee_headers)
+if clients_data:
+    clients_data = normalize_records(clients_data, client_headers)
 
 # ---------------- AUTO-GENERATE EMPLOYEES IF EMPTY ----------------
 if not employees_data:
