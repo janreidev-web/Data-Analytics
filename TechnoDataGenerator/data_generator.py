@@ -102,7 +102,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
             "Hire Date": hire.strftime("%Y-%m-%d"),
-            "Termination/Retirement Date": term.strftime("%Y-%m-%d") if term else "",
+            "Termination Date": term.strftime("%Y-%m-%d") if term else "",
             "Birth Date": birth.strftime("%Y-%m-%d"),
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": random.choice(["Engineer","Manager","Analyst","Designer","Support"]),
@@ -111,7 +111,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": random_work_type(),
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Philippines"]),
+            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Philippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     for j in range(num_interns):
@@ -140,7 +140,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": "Part-Time",
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Phhilippines"]),
+            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Phhilippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     return employees
@@ -152,7 +152,7 @@ def generate_clients(num_clients=100):
             "Client ID": f"C{i+1:03}",
             "Client Name": fake.company(),
             "Founded Date": random_date(1990,2024).strftime("%Y-%m-%d"),
-            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France"])
+            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France"])
         })
     return clients
 
