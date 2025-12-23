@@ -363,7 +363,6 @@ def generate_operating_costs(num_months=120, start_year=2015):
                 "Vendor": fake.company() if category not in ["Office Rent", "Utilities - Electricity", "Utilities - Water"] else "N/A",
                 "Payment Method": random.choice(["Bank Transfer", "Credit Card", "Check", "Direct Debit"]),
                 "Payment Status": random.choices(["Paid", "Pending"], weights=[0.95, 0.05])[0],
-                "Notes": "",
                 "Last Updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             })
         
