@@ -2,7 +2,7 @@ from generator import generate_sales
 from sheets_writer import append_df
 import pandas as pd
 
-SHEET_ID = "YOUR_SPREADSHEET_ID"
+SHEET_ID = "1LZiH-MdlR2k6KcDhvCPUDdzauQTD_qnETpDcK62hdpA"
 
 employees = pd.read_csv("employees.csv")
 services = pd.read_csv("services.csv")
