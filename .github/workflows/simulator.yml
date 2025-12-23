@@ -1,8 +1,8 @@
 name: Tech Data Simulator
 on:
   schedule:
-    # Every 2 minutes
-    - cron: "*/2 * * * *"
+    # Every 1 day
+    - cron: "*/60*24 * * * *"
   workflow_dispatch: # Allow manual trigger
 jobs:
   simulate:
