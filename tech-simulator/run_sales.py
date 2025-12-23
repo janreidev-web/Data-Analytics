@@ -21,7 +21,7 @@ SPREADSHEET_ID = "1LZiH-MdlR2k6KcDhvCPUDdzauQTD_qnETpDcK62hdpA"
 INITIAL_EMPLOYEES = 1000
 INITIAL_INTERNS = 100
 INITIAL_CLIENTS = 500
-INITIAL_SALES = int(os.environ.get('INITIAL_SALES', '10000'))  # Configurable via env var
+INITIAL_SALES = int(os.environ.get('INITIAL_SALES', '100000'))  # Configurable via env var
 
 # For ongoing runs
 SALES_PER_RUN = 1000
@@ -228,7 +228,7 @@ sales_df['Timestamp'] = pd.to_datetime(sales_df['Timestamp'])
 sales_df = sales_df.sort_values('Timestamp')
 sales_df['Timestamp'] = sales_df['Timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
-if num_sales >= 10000:
+if num_sales >= 100000:
     append_large_dataset(spreadsheet, "Sales", sales_df, sales_headers, batch_size=10000)
 else:
     append_df(spreadsheet, "Sales", sales_df, sales_headers)
