@@ -230,7 +230,7 @@ def generate_sales(employees, clients, num_sales=50):
             "Commission Rate": round(random.uniform(5,15),2),
             "Commission Amount": commission,
             "Currency": "USD",
-            "Region": emp["Country/Location"],
+            "Region": emp["Country"],
             "Is Recurring": random.choice([True,False]),
             "Payment Method": random.choice(["Credit Card","Bank Transfer","PayPal","Wire Transfer","Check"]),
             "Payment Status": random.choices(["Paid","Pending","Overdue"], weights=[0.8,0.15,0.05])[0]
