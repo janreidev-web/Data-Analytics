@@ -1,4 +1,3 @@
-# run_sales.py
 import os
 import sys
 import base64
@@ -8,9 +7,10 @@ from google.oauth2.service_account import Credentials
 import gspread
 from datetime import datetime
 
-# Add current folder to Python path to import generate.py
+# Add tech-simulator folder to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
+
 from generate import generate_employees, generate_clients, generate_sales
 from sheets_writer import append_df
 
