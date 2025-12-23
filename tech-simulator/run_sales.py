@@ -18,19 +18,16 @@ from sheets_writer import append_df
 SPREADSHEET_ID = "1LZiH-MdlR2k6KcDhvCPUDdzauQTD_qnETpDcK62hdpA"
 NUM_SALES = 50  # number of sales to generate per run
 
-# ---------------- GOOGLE SHEETS AUTH ----------------
+# --------- Decode Base64 service account ---------
 service_account_b64 = os.environ.get("GCP_SERVICE_ACCOUNT")
 if not service_account_b64:
     raise ValueError("GCP_SERVICE_ACCOUNT env variable not found")
 
 service_account_info = json.loads(base64.b64decode(service_account_b64))
-creds = Credentials.from_service_account_info(
-    service_account_info, 
-    scopes=["https://www.googleapis.com/auth/spreadsheets"]
-)
+creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
 client = gspread.authorize(creds)
 
-# ---------------- OPEN SHEET ----------------
+# --------- Open spreadsheet ---------
 spreadsheet = client.open_by_key(SPREADSHEET_ID)
 
 # ---------------- HEADERS ----------------
