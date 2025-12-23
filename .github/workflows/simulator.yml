@@ -1,23 +1,31 @@
 name: Tech Data Simulator
+
 on:
   schedule:
-    # Every 1 day
-    - cron: "*/60*24 * * * *"
-  workflow_dispatch: # Allow manual trigger
+    # Daily at 8:00 AM Philippines time (00:00 UTC)
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
 jobs:
   simulate:
     runs-on: ubuntu-latest
+
     steps:
-      # Step 1: Checkout repo
       - uses: actions/checkout@v4
-      # Step 2: Setup Python
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
-      # Step 3: Install dependencies
-      - run: pip install -r tech-simulator/requirements.txt
-      # Step 4: Run the Python script with environment variable
-      - name: Run sales simulator
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r tech-simulator/requirements.txt
+
+      - name: Set up GCP credentials
         env:
           GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        run: |
+          echo "$GCP_SERVICE_ACCOUNT" > $HOME/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
+
+      - name: Run sales simulator
         run: python tech-simulator/run_sales.py
