@@ -2,29 +2,30 @@ name: Tech Data Simulator
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # Run every 5 minutes
-  workflow_dispatch:       # Allow manual runs
+    # Every 2 minutes
+    - cron: "*/2 * * * *"
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   simulate:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # Step 1: Checkout repo
       - uses: actions/checkout@v4
 
-      # 2️⃣ Set up Python
+      # Step 2: Setup Python
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
 
-      # 3️⃣ Install dependencies
-      - name: Install Python packages
-        run: pip install --upgrade pip && pip install -r tech-simulator/requirements.txt
+      # Step 3: Install dependencies
+      - run: pip install -r tech-simulator/requirements.txt
 
-      # 4️⃣ Run the sales simulation script
-      - name: Run Sales Simulation
-        run: python tech-simulator/run_sales.py
-        env:
-          # Base64 service account secret
-          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      # Step 4: Decode Base64 service account and save to file
+      - run: |
+          mkdir -p tech-simulator
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT }}" | base64 --decode > tech-simulator/service_account.json
+
+      # Step 5: Run the Python script
+      - run: python tech-simulator/run_sales.py
