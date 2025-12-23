@@ -131,7 +131,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
             "Hire Date": hire.strftime("%Y-%m-%d"),
-            "Termination/Retirement Date": term.strftime("%Y-%m-%d") if term else "",
+            "Termination Date": term.strftime("%Y-%m-%d") if term else "",
             "Birth Date": birth.strftime("%Y-%m-%d"),
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": "Intern",
