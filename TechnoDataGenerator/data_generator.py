@@ -20,7 +20,7 @@ INITIAL_EMPLOYEES = 1000
 INITIAL_INTERNS = 100
 INITIAL_CLIENTS = 500
 INITIAL_SALES = int(os.environ.get("INITIAL_SALES", "100000"))
-SALES_PER_RUN = 1000
+SALES_PER_RUN = random.randint(1, 500)  # Random 1-500 for daily runs
 
 fake = Faker()
 
@@ -111,7 +111,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": random_work_type(),
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Philippines"]),
+            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     for j in range(num_interns):
@@ -140,7 +140,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": "Part-Time",
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Phhilippines"]),
+            "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     return employees
@@ -189,16 +189,50 @@ def generate_operating_costs(num_months=120, start_year=2015):
         if current>datetime.now(): break
     return costs
 
-def generate_sales(employees, clients, num_sales=50):
+def generate_sales(employees, clients, num_sales=50, start_year=None, end_year=None):
     sales=[]
     active_emp=[e for e in employees if e["Employment Status"]=="Active"]
     if not active_emp: active_emp=employees
+    
+    # Filter to only employees hired in the past with at least 30 days tenure
+    eligible_emp = []
+    for e in active_emp:
+        hire = datetime.strptime(e["Hire Date"], "%Y-%m-%d")
+        if hire <= datetime.now() and (datetime.now() - hire).days >= 30:
+            eligible_emp.append(e)
+    
+    if not eligible_emp:
+        print("⚠️ No eligible employees for sales generation")
+        return []
+    
     pricing={"Auth API":(10,100),"Payment Service":(50,200),"Analytics API":(25,150),"Messaging API":(20,120)}
+    
     for i in range(num_sales):
-        emp=random.choice(active_emp)
+        emp=random.choice(eligible_emp)
         cli=random.choice(clients)
         hire=datetime.strptime(emp["Hire Date"],"%Y-%m-%d")
-        sale_date=hire + timedelta(days=random.randint(30,(datetime.now()-hire).days))
+        
+        # If start_year and end_year provided, generate sales within that range
+        if start_year and end_year:
+            # Generate random date between start_year and end_year
+            sale_start = max(hire + timedelta(days=30), datetime(start_year, 1, 1))
+            sale_end = min(datetime.now(), datetime(end_year, 12, 31))
+            
+            if sale_start >= sale_end:
+                sale_start = hire + timedelta(days=30)
+                sale_end = datetime.now()
+            
+            days_range = (sale_end - sale_start).days
+            if days_range < 1:
+                continue
+            sale_date = sale_start + timedelta(days=random.randint(0, days_range))
+        else:
+            # For daily runs: generate sales within the last 30 days
+            days_back = min(30, (datetime.now() - hire).days - 30)
+            if days_back < 1:
+                days_back = 1
+            sale_date = datetime.now() - timedelta(days=random.randint(0, days_back))
+        
         svc=random.choice(list(pricing.keys()))
         qty=random.randint(1,100)
         unit=round(random.uniform(*pricing[svc]),2)
@@ -209,8 +243,16 @@ def generate_sales(employees, clients, num_sales=50):
         tax_amt=round((subtotal-discount_amt)*(tax/100),2)
         total=round(subtotal-discount_amt+tax_amt,2)
         commission=round(total*random.uniform(0.05,0.15),2)
+        
+        # Get the current count from BigQuery for unique Sale IDs
+        sale_id_num = i + 1
+        if len(sales) > 0:
+            # Extract number from last Sale ID and increment
+            last_id = sales[-1]["Sale ID"]
+            sale_id_num = int(last_id.replace("S", "")) + 1
+        
         sales.append({
-            "Sale ID": f"S{i+1:06}",
+            "Sale ID": f"S{sale_id_num:06}",
             "Timestamp": sale_date.strftime("%Y-%m-%d %H:%M:%S"),
             "Microservice Name": svc,
             "Service Category": random.choice(["API","Platform","Analytics"]),
@@ -261,8 +303,15 @@ if __name__=="__main__":
         append_df_bq(pd.DataFrame(costs), COSTS_TABLE)
 
     # Sales
-    num_sales = INITIAL_SALES if not table_has_data(SALES_TABLE) else SALES_PER_RUN
-    sales = generate_sales(emps, cls, num_sales)
+    if not table_has_data(SALES_TABLE):
+        # Initial load: 100k sales from 2015-2025
+        print(f"📊 Generating initial {INITIAL_SALES:,} sales records (2015-2025)...")
+        sales = generate_sales(emps, cls, INITIAL_SALES, start_year=2015, end_year=2025)
+    else:
+        # Daily runs: Random 1-500 recent sales
+        print(f"📊 Generating {SALES_PER_RUN:,} new sales records for daily update...")
+        sales = generate_sales(emps, cls, SALES_PER_RUN)
+    
     append_df_bq(pd.DataFrame(sales), SALES_TABLE)
 
     print(f"✅ Data load complete at {datetime.now()}")
