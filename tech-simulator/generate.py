@@ -304,10 +304,7 @@ def generate_operating_costs(num_months=120, start_year=2015):
     # Base costs that will grow over time (inflation ~3% per year)
     base_costs = {
         "Office Rent": 15000,
-        "Utilities - Electricity": 2500,
-        "Utilities - Water": 500,
-        "Utilities - Internet": 1500,
-        "Utilities - Phone": 800,
+        "Utilities": 5300,
         "Cloud Hosting": 8000,
         "Software Licenses": 5000,
         "Office Supplies": 1200,
