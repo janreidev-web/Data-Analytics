@@ -2,3 +2,4 @@ pandas
 faker
 google-cloud-bigquery
 pyarrow
+pandas_gbq
