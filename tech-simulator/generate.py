@@ -1,15 +1,20 @@
 from faker import Faker
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 fake = Faker()
 
 # ----------------- HELPER FUNCTIONS -----------------
 def random_date(start_year=2015, end_year=2025):
-    year = random.randint(start_year, end_year)
-    month = random.randint(1,12)
-    day = random.randint(1,28)
-    return datetime(year, month, day)
+    """Generate random date between start_year and end_year"""
+    start_date = datetime(start_year, 1, 1)
+    end_date = datetime(end_year, 12, 31)
+    
+    time_between = end_date - start_date
+    days_between = time_between.days
+    random_days = random.randrange(days_between)
+    
+    return start_date + timedelta(days=random_days)
 
 def random_birth_date(min_age=20, max_age=65):
     today = datetime.now()
@@ -38,8 +43,11 @@ def random_salary(seniority):
 def generate_employees(total_employees=1000, num_interns=100):
     employees = []
 
-    # Regular employees
+    print(f"  Generating {total_employees} regular employees...")
     for i in range(total_employees):
+        if (i + 1) % 250 == 0:
+            print(f"    → Progress: {i+1}/{total_employees}")
+            
         gender = random.choice(["male", "female"])
         first_name = fake.first_name_male() if gender=="male" else fake.first_name_female()
         last_name = fake.last_name()
@@ -72,7 +80,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
-    # Interns
+    print(f"  Generating {num_interns} interns...")
     for j in range(num_interns):
         gender = random.choice(["male", "female"])
         first_name = fake.first_name_male() if gender=="male" else fake.first_name_female()
@@ -105,7 +113,11 @@ def generate_employees(total_employees=1000, num_interns=100):
 
 def generate_clients(num_clients=50):
     clients = []
+    print(f"  Generating {num_clients} clients...")
     for i in range(num_clients):
+        if (i + 1) % 100 == 0:
+            print(f"    → Progress: {i+1}/{num_clients}")
+            
         clients.append({
             "Client ID": f"C{i+1:03}",
             "Client Name": fake.company(),
@@ -114,29 +126,36 @@ def generate_clients(num_clients=50):
         })
     return clients
 
-def generate_sales(employees, clients, num_sales=50):
+def generate_sales(employees, clients, num_sales=50, start_sale_id=1):
     """
     Generate sales records from employees and clients.
-    Handles both dict records from generate functions and dict records from Google Sheets.
+    Optimized for large datasets with progress tracking.
     """
     sales = []
     
-    # Get the current max sale ID from any existing sales to avoid duplicates
-    sale_counter = 1
+    print(f"  Generating {num_sales:,} sales transactions...")
+    
+    # Pre-compute employee and client indices for faster random selection
+    num_employees = len(employees)
+    num_clients = len(clients)
     
     for i in range(num_sales):
-        employee = random.choice(employees)
-        client = random.choice(clients)
+        # Progress indicator for large datasets
+        if num_sales >= 10000 and (i + 1) % 10000 == 0:
+            print(f"    → Progress: {i+1:,}/{num_sales:,} ({(i+1)/num_sales*100:.1f}%)")
+        
+        employee = employees[random.randint(0, num_employees - 1)]
+        client = clients[random.randint(0, num_clients - 1)]
         sale_date = random_date(2015, 2025)
         
-        # Handle both dict keys with exact match and potential variations
-        employee_id = employee.get("Employee ID") or employee.get("employee_id") or employee.get("Employee_ID")
-        client_id = client.get("Client ID") or client.get("client_id") or client.get("Client_ID")
-        client_name = client.get("Client Name") or client.get("client_name") or client.get("Client_Name")
-        location = employee.get("Country/Location") or employee.get("country_location") or employee.get("Country_Location")
+        # Handle dict keys
+        employee_id = employee.get("Employee ID", "")
+        client_id = client.get("Client ID", "")
+        client_name = client.get("Client Name", "")
+        location = employee.get("Country/Location", "")
         
         sales.append({
-            "Sale ID": f"S{sale_counter:05}",
+            "Sale ID": f"S{start_sale_id + i:06}",  # Changed to 6 digits for 100k+ sales
             "Timestamp": sale_date.strftime("%Y-%m-%d %H:%M:%S"),
             "Microservice Name": random.choice(["Auth API","Payment Service","Analytics API","Messaging API"]),
             "Service Category": random.choice(["API","Platform","Analytics"]),
@@ -150,6 +169,6 @@ def generate_sales(employees, clients, num_sales=50):
             "Region": location,
             "Is Recurring": random.choice([True, False])
         })
-        sale_counter += 1
-        
+    
+    print(f"  ✓ Generated {num_sales:,} sales transactions")
     return sales
