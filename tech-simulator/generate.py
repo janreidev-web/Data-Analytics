@@ -1,4 +1,3 @@
-# generate.py
 from faker import Faker
 import random
 from datetime import datetime
@@ -116,24 +115,41 @@ def generate_clients(num_clients=50):
     return clients
 
 def generate_sales(employees, clients, num_sales=50):
+    """
+    Generate sales records from employees and clients.
+    Handles both dict records from generate functions and dict records from Google Sheets.
+    """
     sales = []
+    
+    # Get the current max sale ID from any existing sales to avoid duplicates
+    sale_counter = 1
+    
     for i in range(num_sales):
         employee = random.choice(employees)
         client = random.choice(clients)
-        sale_date = random_date(2015,2025)
+        sale_date = random_date(2015, 2025)
+        
+        # Handle both dict keys with exact match and potential variations
+        employee_id = employee.get("Employee ID") or employee.get("employee_id") or employee.get("Employee_ID")
+        client_id = client.get("Client ID") or client.get("client_id") or client.get("Client_ID")
+        client_name = client.get("Client Name") or client.get("client_name") or client.get("Client_Name")
+        location = employee.get("Country/Location") or employee.get("country_location") or employee.get("Country_Location")
+        
         sales.append({
-            "Sale ID": f"S{i+1:05}",
+            "Sale ID": f"S{sale_counter:05}",
             "Timestamp": sale_date.strftime("%Y-%m-%d %H:%M:%S"),
             "Microservice Name": random.choice(["Auth API","Payment Service","Analytics API","Messaging API"]),
             "Service Category": random.choice(["API","Platform","Analytics"]),
-            "Client ID": client["Client ID"],
-            "Client Name": client["Client Name"],
-            "Sales Rep ID": employee["Employee ID"],
+            "Client ID": client_id,
+            "Client Name": client_name,
+            "Sales Rep ID": employee_id,
             "Contract Type": random.choice(["Subscription","One-Time"]),
             "Contract Duration": random.choice(["Monthly","Annual"]),
             "Revenue Amount": round(random.uniform(1000,10000),2),
             "Currency": "USD",
-            "Region": employee["Country/Location"],
+            "Region": location,
             "Is Recurring": random.choice([True, False])
         })
+        sale_counter += 1
+        
     return sales
