@@ -15,11 +15,10 @@ def append_df(spreadsheet, sheet_name, df, expected_headers):
     # Ensure DataFrame columns match expected headers
     df = df[expected_headers]
     
-    # Convert DataFrame to list of lists (including all rows at once)
+    # Convert DataFrame to list of lists
     values = df.values.tolist()
     
-    # Batch append all rows at once (single API call instead of one per row)
+    # Batch append all rows at once (single API call)
     if values:
         ws.append_rows(values, value_input_option='USER_ENTERED')
-    
-    print(f"✓ Appended {len(values)} rows to '{sheet_name}'")
+        print(f"  → Appended {len(values)} rows to '{sheet_name}'")
