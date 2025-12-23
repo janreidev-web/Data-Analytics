@@ -8,7 +8,7 @@ from faker import Faker
 from google.cloud import bigquery
 
 # ---------------- CONFIG ----------------
-PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "your-gcp-project-id")
+PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "tech-data-simulator")
 DATASET = os.environ.get("BQ_DATASET", "tech_analytics")
 
 EMPLOYEES_TABLE = f"{PROJECT_ID}.{DATASET}.employees"
@@ -31,7 +31,7 @@ if "GCP_SERVICE_ACCOUNT" in os.environ:
         f.write(sa_json)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gcp-key.json"
 
-client = bigquery.Client()
+client = bigquery.Client(project=PROJECT_ID)
 
 # ---------------- HELPERS ----------------
 def table_has_data(table_id):
@@ -111,7 +111,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": random_work_type(),
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France"]),
+            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Philippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     for j in range(num_interns):
@@ -140,7 +140,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Setup": random_work_setup(),
             "Work Type": "Part-Time",
             "Manager ID": f"E{random.randint(1,total_employees):05}",
-            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France"]),
+            "Country/Location": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France", "Phhilippines"]),
             "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     return employees
