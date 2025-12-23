@@ -168,7 +168,7 @@ def generate_employees(total_employees=1000, num_interns=100):
 
     return employees
 
-def generate_clients(num_clients=50):
+def generate_clients(num_clients=100):
     clients = []
     print(f"  Generating {num_clients} clients...")
     for i in range(num_clients):
@@ -212,7 +212,7 @@ def generate_sales(employees, clients, num_sales=50, start_sale_id=1):
     }
     
     for i in range(num_sales):
-        if num_sales >= 10000 and (i + 1) % 10000 == 0:
+        if num_sales >= 100000 and (i + 1) % 100000 == 0:
             print(f"    → Progress: {i+1:,}/{num_sales:,} ({(i+1)/num_sales*100:.1f}%)")
         
         employee = active_employees[random.randint(0, num_employees - 1)]
