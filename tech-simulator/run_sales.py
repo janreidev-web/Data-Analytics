@@ -9,8 +9,8 @@ import gspread
 from datetime import datetime
 
 # Add current folder to Python path to import generate.py
-sys.path.append(os.path.dirname(__file__))
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
 from generate import generate_employees, generate_clients, generate_sales
 from sheets_writer import append_df
 
