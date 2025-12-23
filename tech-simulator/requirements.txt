@@ -1,5 +1,3 @@
+google-cloud-bigquery
 pandas
-numpy
-gspread
-google-auth
-Faker
+faker
