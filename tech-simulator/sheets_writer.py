@@ -1,20 +1,25 @@
-import gspread
-from google.oauth2.service_account import Credentials
 import pandas as pd
 
-def get_or_create_worksheet(spreadsheet, title, headers, rows=1000, cols=20):
-    """Get worksheet by title or create if missing"""
-    try:
-        ws = spreadsheet.worksheet(title)
-    except gspread.WorksheetNotFound:
-        ws = spreadsheet.add_worksheet(title=title, rows=rows, cols=cols)
-        ws.append_row(headers)
-    return ws
-
-def append_df(spreadsheet, worksheet_title, df, headers):
-    """Append DataFrame to worksheet"""
-    ws = get_or_create_worksheet(spreadsheet, worksheet_title, headers)
-    if df.empty:
-        return
-    for row in df.to_dict(orient="records"):
-        ws.append_row(list(row.values()))
+def append_df(spreadsheet, sheet_name, df, expected_headers):
+    """
+    Append a DataFrame to a Google Sheet using batch update (faster, avoids rate limits)
+    
+    Args:
+        spreadsheet: gspread Spreadsheet object
+        sheet_name: Name of the worksheet
+        df: pandas DataFrame to append
+        expected_headers: List of expected column headers
+    """
+    ws = spreadsheet.worksheet(sheet_name)
+    
+    # Ensure DataFrame columns match expected headers
+    df = df[expected_headers]
+    
+    # Convert DataFrame to list of lists (including all rows at once)
+    values = df.values.tolist()
+    
+    # Batch append all rows at once (single API call instead of one per row)
+    if values:
+        ws.append_rows(values, value_input_option='USER_ENTERED')
+    
+    print(f"✓ Appended {len(values)} rows to '{sheet_name}'")
