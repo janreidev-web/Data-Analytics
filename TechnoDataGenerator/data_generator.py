@@ -20,7 +20,7 @@ INITIAL_EMPLOYEES = 1000
 INITIAL_INTERNS = 100
 INITIAL_CLIENTS = 500
 INITIAL_SALES = int(os.environ.get("INITIAL_SALES", "100000"))
-SALES_PER_RUN = random.randint(1, 500)  # Random 1-500 for daily runs
+SALES_PER_RUN = random.randint(1, 500)
 
 fake = Faker()
 
@@ -101,9 +101,9 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Gender": gender.title(),
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
-            "Hire Date": hire.strftime("%Y-%m-%d"),
-            "Termination Date": term.strftime("%Y-%m-%d") if term else "",
-            "Birth Date": birth.strftime("%Y-%m-%d"),
+            "Hire Date": hire.date(),  # ✅ Changed to date object
+            "Termination Date": term.date() if term else None,  # ✅ Changed to date object or None
+            "Birth Date": birth.date(),  # ✅ Changed to date object
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": random.choice(["Engineer","Manager","Analyst","Designer","Support"]),
             "Seniority Level": seniority,
@@ -112,7 +112,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Type": random_work_type(),
             "Manager ID": f"E{random.randint(1,total_employees):05}",
             "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
-            "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "Last Updated Timestamp": datetime.now()  # ✅ Changed to datetime object
         })
     for j in range(num_interns):
         gender = random.choice(["male","female"])
@@ -130,9 +130,9 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Gender": gender.title(),
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
-            "Hire Date": hire.strftime("%Y-%m-%d"),
-            "Termination Date": term.strftime("%Y-%m-%d") if term else "",
-            "Birth Date": birth.strftime("%Y-%m-%d"),
+            "Hire Date": hire.date(),  # ✅ Changed to date object
+            "Termination Date": term.date() if term else None,  # ✅ Changed to date object or None
+            "Birth Date": birth.date(),  # ✅ Changed to date object
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": "Intern",
             "Seniority Level": "Intern",
@@ -141,7 +141,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Type": "Part-Time",
             "Manager ID": f"E{random.randint(1,total_employees):05}",
             "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
-            "Last Updated Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "Last Updated Timestamp": datetime.now()  # ✅ Changed to datetime object
         })
     return employees
 
@@ -151,7 +151,7 @@ def generate_clients(num_clients=100):
         clients.append({
             "Client ID": f"C{i+1:03}",
             "Client Name": fake.company(),
-            "Founded Date": random_date(1990,2024).strftime("%Y-%m-%d"),
+            "Founded Date": random_date(1990,2024).date(),  # ✅ Changed to date object
             "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France"])
         })
     return clients
@@ -172,7 +172,7 @@ def generate_operating_costs(num_months=120, start_year=2015):
             cost_type = "Fixed" if cat in ["Utilities","Office Rent","Cloud Hosting","Software Licenses","Insurance"] else "Variable"
             costs.append({
                 "Cost ID": f"OC{len(costs)+1:07}",
-                "Date": current.strftime("%Y-%m-%d"),
+                "Date": current.date(),  # ✅ Changed to date object
                 "Year": current.year,
                 "Month": current.month,
                 "Month Name": current.strftime("%B"),
@@ -183,7 +183,7 @@ def generate_operating_costs(num_months=120, start_year=2015):
                 "Vendor": fake.company() if cost_type=="Variable" else "N/A",
                 "Payment Method": random.choice(["Bank Transfer","Credit Card","Check","Direct Debit"]),
                 "Payment Status": random.choices(["Paid","Pending"], weights=[0.95,0.05])[0],
-                "Last Updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "Last Updated": datetime.now()  # ✅ Changed to datetime object
             })
         current += timedelta(days=30)
         if current>datetime.now(): break
@@ -197,7 +197,13 @@ def generate_sales(employees, clients, num_sales=50, start_year=None, end_year=N
     # Filter to only employees hired in the past with at least 30 days tenure
     eligible_emp = []
     for e in active_emp:
-        hire = datetime.strptime(e["Hire Date"], "%Y-%m-%d")
+        hire = e["Hire Date"]
+        # Convert to datetime if it's a date object for comparison
+        if isinstance(hire, str):
+            hire = datetime.strptime(hire, "%Y-%m-%d")
+        elif not isinstance(hire, datetime):
+            hire = datetime.combine(hire, datetime.min.time())
+        
         if hire <= datetime.now() and (datetime.now() - hire).days >= 30:
             eligible_emp.append(e)
     
@@ -210,11 +216,16 @@ def generate_sales(employees, clients, num_sales=50, start_year=None, end_year=N
     for i in range(num_sales):
         emp=random.choice(eligible_emp)
         cli=random.choice(clients)
-        hire=datetime.strptime(emp["Hire Date"],"%Y-%m-%d")
+        
+        # Handle hire date
+        hire = emp["Hire Date"]
+        if isinstance(hire, str):
+            hire = datetime.strptime(hire, "%Y-%m-%d")
+        elif not isinstance(hire, datetime):
+            hire = datetime.combine(hire, datetime.min.time())
         
         # If start_year and end_year provided, generate sales within that range
         if start_year and end_year:
-            # Generate random date between start_year and end_year
             sale_start = max(hire + timedelta(days=30), datetime(start_year, 1, 1))
             sale_end = min(datetime.now(), datetime(end_year, 12, 31))
             
@@ -244,16 +255,14 @@ def generate_sales(employees, clients, num_sales=50, start_year=None, end_year=N
         total=round(subtotal-discount_amt+tax_amt,2)
         commission=round(total*random.uniform(0.05,0.15),2)
         
-        # Get the current count from BigQuery for unique Sale IDs
         sale_id_num = i + 1
         if len(sales) > 0:
-            # Extract number from last Sale ID and increment
             last_id = sales[-1]["Sale ID"]
             sale_id_num = int(last_id.replace("S", "")) + 1
         
         sales.append({
             "Sale ID": f"S{sale_id_num:06}",
-            "Timestamp": sale_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "Timestamp": sale_date,  # ✅ Changed to datetime object
             "Microservice Name": svc,
             "Service Category": random.choice(["API","Platform","Analytics"]),
             "Client ID": cli["Client ID"],
@@ -304,11 +313,9 @@ if __name__=="__main__":
 
     # Sales
     if not table_has_data(SALES_TABLE):
-        # Initial load: 100k sales from 2015-2025
         print(f"📊 Generating initial {INITIAL_SALES:,} sales records (2015-2025)...")
         sales = generate_sales(emps, cls, INITIAL_SALES, start_year=2015, end_year=2025)
     else:
-        # Daily runs: Random 1-500 recent sales
         print(f"📊 Generating {SALES_PER_RUN:,} new sales records for daily update...")
         sales = generate_sales(emps, cls, SALES_PER_RUN)
     
