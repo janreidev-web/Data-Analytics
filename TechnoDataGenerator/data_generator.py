@@ -101,9 +101,9 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Gender": gender.title(),
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
-            "Hire Date": hire.date(),  # ✅ Changed to date object
-            "Termination Date": term.date() if term else None,  # ✅ Changed to date object or None
-            "Birth Date": birth.date(),  # ✅ Changed to date object
+            "Hire Date": hire.date(),
+            "Termination Date": term.date() if term else pd.NaT,  # ✅ Use pd.NaT instead of None
+            "Birth Date": birth.date(),
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": random.choice(["Engineer","Manager","Analyst","Designer","Support"]),
             "Seniority Level": seniority,
@@ -112,7 +112,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Type": random_work_type(),
             "Manager ID": f"E{random.randint(1,total_employees):05}",
             "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
-            "Last Updated Timestamp": datetime.now()  # ✅ Changed to datetime object
+            "Last Updated Timestamp": datetime.now()
         })
     for j in range(num_interns):
         gender = random.choice(["male","female"])
@@ -130,9 +130,9 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Gender": gender.title(),
             "Email": f"{first.lower()}.{last.lower()}@example.com",
             "Employment Status": status,
-            "Hire Date": hire.date(),  # ✅ Changed to date object
-            "Termination Date": term.date() if term else None,  # ✅ Changed to date object or None
-            "Birth Date": birth.date(),  # ✅ Changed to date object
+            "Hire Date": hire.date(),
+            "Termination Date": term.date() if term else pd.NaT,  # ✅ Use pd.NaT instead of None
+            "Birth Date": birth.date(),
             "Department": random.choice(["Engineering","Sales","Marketing","Product","HR","Finance","Support"]),
             "Job Title": "Intern",
             "Seniority Level": "Intern",
@@ -141,7 +141,7 @@ def generate_employees(total_employees=1000, num_interns=100):
             "Work Type": "Part-Time",
             "Manager ID": f"E{random.randint(1,total_employees):05}",
             "Country": random.choice(["USA","UK","Germany","India","Australia","Canada","Brazil","Japan","Singapore","France","Philippines"]),
-            "Last Updated Timestamp": datetime.now()  # ✅ Changed to datetime object
+            "Last Updated Timestamp": datetime.now()
         })
     return employees
 
